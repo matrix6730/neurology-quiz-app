@@ -188,8 +188,8 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
   };
 
   // Quiz Functions
-  const handleAnswer = (questionId, answer) => {
-    setAnswers({ ...answers, [questionId]: answer });
+  const handleAnswer = (questionId: any, answer: any) => {
+    setAnswers(prev => ({ ...prev, [questionId]: answer }));
   };
 
   const handleNext = () => {
@@ -441,8 +441,8 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                 <div>
                   <label className="block text-gray-300 mb-2">Question</label>
                   <textarea
-                    value={editingQuestion.question}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, question: e.target.value })}
+                    value={editingQuestion.question || ''}
+                    onChange={(e) => setEditingQuestion(prev => ({ ...prev, question: e.target.value }))}
                     className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700 h-32"
                     placeholder="Enter your question..."
                   />
@@ -456,11 +456,11 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                       <div key={index} className="flex gap-2 mb-2">
                         <input
                           type="text"
-                          value={option}
+                          value={option || ''}
                           onChange={(e) => {
-                            const newOptions = [...editingQuestion.options];
+                            const newOptions = [...(editingQuestion.options || [])];
                             newOptions[index] = e.target.value;
-                            setEditingQuestion({ ...editingQuestion, options: newOptions });
+                            setEditingQuestion(prev => ({ ...prev, options: newOptions }));
                           }}
                           className="flex-1 p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                           placeholder={`Option ${index + 1}`}
@@ -497,8 +497,8 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                     <label className="block text-gray-300 mb-2">Correct Answer</label>
                     <input
                       type="text"
-                      value={editingQuestion.correctAnswer}
-                      onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value })}
+                      value={editingQuestion.correctAnswer || ''}
+                      onChange={(e) => setEditingQuestion(prev => ({ ...prev, correctAnswer: e.target.value }))}
                       className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                       placeholder="Enter the correct answer..."
                     />
@@ -509,8 +509,8 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                 <div>
                   <label className="block text-gray-300 mb-2">Explanation</label>
                   <textarea
-                    value={editingQuestion.explanation}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, explanation: e.target.value })}
+                    value={editingQuestion.explanation || ''}
+                    onChange={(e) => setEditingQuestion(prev => ({ ...prev, explanation: e.target.value }))}
                     className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700 h-24"
                     placeholder="Explain the correct answer..."
                   />
