@@ -175,7 +175,7 @@ const deleteQuestion = useMutation(api.questions.deleteQuestion);
     setEditingQuestion(null);
   };
 
-  const handleDeleteQuestion = async (id) => {
+  const handleDeleteQuestion = async (id: any) => {
     if (window.confirm('Are you sure you want to delete this question?')) {
       await deleteQuestion({ id });
     }
