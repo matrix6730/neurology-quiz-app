@@ -21,8 +21,6 @@ const deleteQuestion = useMutation(api.questions.deleteQuestion);
   const [showResults, setShowResults] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
-  
-  
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [videoPrompt, setVideoPrompt] = useState('');
   const [generatingVideo, setGeneratingVideo] = useState(false);
@@ -67,74 +65,74 @@ const deleteQuestion = useMutation(api.questions.deleteQuestion);
     border: '1px solid rgba(239, 68, 68, 0.2)'
   };
 
-  // Sample questions - will be replaced by Convex data
-  const sampleQuestions = [
-    {
-      id: '1',
-      section: 'diagnosis',
-      type: 'multiple',
-      question: 'A 32-year-old woman presents with severe unilateral throbbing headache, photophobia, and nausea lasting 12 hours. She has a history of similar episodes. According to ICHD-3 criteria, which diagnosis is most likely?',
-      options: [
-        'Migraine without aura',
-        'Tension-type headache',
-        'Cluster headache',
-        'Medication overuse headache'
-      ],
-      correctAnswer: 0,
-      explanation: 'Migraine without aura is characterized by attacks lasting 4-72 hours with at least two of: unilateral location, pulsating quality, moderate-to-severe intensity, aggravation by routine physical activity. At least one of nausea/vomiting or photophobia and phonophobia must be present.'
-    },
-    {
-      id: '2',
-      section: 'diagnosis',
-      type: 'trueFalse',
-      question: 'Cluster headaches are more common in women than men.',
-      correctAnswer: false,
-      explanation: 'False. Cluster headaches have a male predominance with a ratio of approximately 3-4:1 (men:women).'
-    },
-    {
-      id: '3',
-      section: 'diagnosis',
-      type: 'fillBlank',
-      question: 'The classic triad of symptoms in giant cell arteritis includes headache, jaw claudication, and ________ symptoms.',
-      correctAnswer: 'visual',
-      explanation: 'Giant cell arteritis (temporal arteritis) classically presents with new headache, jaw claudication, and visual symptoms (including diplopia, vision loss). ESR and CRP are typically elevated.'
-    },
-    {
-      id: '4',
-      section: 'management',
-      type: 'multiple',
-      question: 'Which medication is FDA-approved for the acute treatment of migraine and works as a CGRP receptor antagonist?',
-      options: [
-        'Sumatriptan',
-        'Ubrogepant',
-        'Topiramate',
-        'Propranolol'
-      ],
-      correctAnswer: 1,
-      explanation: 'Ubrogepant (Ubrelvy) is a CGRP receptor antagonist approved for acute migraine treatment. Sumatriptan is a triptan, while topiramate and propranolol are preventive medications.'
-    },
-    {
-      id: '5',
-      section: 'management',
-      type: 'trueFalse',
-      question: 'High-flow oxygen therapy is an effective abortive treatment for cluster headaches.',
-      correctAnswer: true,
-      explanation: 'True. High-flow oxygen (100% oxygen at 12-15 L/min via non-rebreather mask for 15-20 minutes) is highly effective for aborting cluster headache attacks.'
-    },
-    {
-      id: '6',
-      section: 'management',
-      type: 'fillBlank',
-      question: 'The first-line preventive medication class for migraine prophylaxis includes beta-blockers, with ________ being the most commonly prescribed.',
-      correctAnswer: 'propranolol',
-      explanation: 'Propranolol is the most commonly used beta-blocker for migraine prevention, typically dosed at 80-240 mg daily. Other options include metoprolol and timolol.'
-    }
-  ];
+  // // Sample questions - will be replaced by Convex data
+  // const sampleQuestions = [
+  //   {
+  //     id: '1',
+  //     section: 'diagnosis',
+  //     type: 'multiple',
+  //     question: 'A 32-year-old woman presents with severe unilateral throbbing headache, photophobia, and nausea lasting 12 hours. She has a history of similar episodes. According to ICHD-3 criteria, which diagnosis is most likely?',
+  //     options: [
+  //       'Migraine without aura',
+  //       'Tension-type headache',
+  //       'Cluster headache',
+  //       'Medication overuse headache'
+  //     ],
+  //     correctAnswer: 0,
+  //     explanation: 'Migraine without aura is characterized by attacks lasting 4-72 hours with at least two of: unilateral location, pulsating quality, moderate-to-severe intensity, aggravation by routine physical activity. At least one of nausea/vomiting or photophobia and phonophobia must be present.'
+  //   },
+  //   {
+  //     id: '2',
+  //     section: 'diagnosis',
+  //     type: 'trueFalse',
+  //     question: 'Cluster headaches are more common in women than men.',
+  //     correctAnswer: false,
+  //     explanation: 'False. Cluster headaches have a male predominance with a ratio of approximately 3-4:1 (men:women).'
+  //   },
+  //   {
+  //     id: '3',
+  //     section: 'diagnosis',
+  //     type: 'fillBlank',
+  //     question: 'The classic triad of symptoms in giant cell arteritis includes headache, jaw claudication, and ________ symptoms.',
+  //     correctAnswer: 'visual',
+  //     explanation: 'Giant cell arteritis (temporal arteritis) classically presents with new headache, jaw claudication, and visual symptoms (including diplopia, vision loss). ESR and CRP are typically elevated.'
+  //   },
+  //   {
+  //     id: '4',
+  //     section: 'management',
+  //     type: 'multiple',
+  //     question: 'Which medication is FDA-approved for the acute treatment of migraine and works as a CGRP receptor antagonist?',
+  //     options: [
+  //       'Sumatriptan',
+  //       'Ubrogepant',
+  //       'Topiramate',
+  //       'Propranolol'
+  //     ],
+  //     correctAnswer: 1,
+  //     explanation: 'Ubrogepant (Ubrelvy) is a CGRP receptor antagonist approved for acute migraine treatment. Sumatriptan is a triptan, while topiramate and propranolol are preventive medications.'
+  //   },
+  //   {
+  //     id: '5',
+  //     section: 'management',
+  //     type: 'trueFalse',
+  //     question: 'High-flow oxygen therapy is an effective abortive treatment for cluster headaches.',
+  //     correctAnswer: true,
+  //     explanation: 'True. High-flow oxygen (100% oxygen at 12-15 L/min via non-rebreather mask for 15-20 minutes) is highly effective for aborting cluster headache attacks.'
+  //   },
+  //   {
+  //     id: '6',
+  //     section: 'management',
+  //     type: 'fillBlank',
+  //     question: 'The first-line preventive medication class for migraine prophylaxis includes beta-blockers, with ________ being the most commonly prescribed.',
+  //     correctAnswer: 'propranolol',
+  //     explanation: 'Propranolol is the most commonly used beta-blocker for migraine prevention, typically dosed at 80-240 mg daily. Other options include metoprolol and timolol.'
+  //   }
+  // ];
 
-  useEffect(() => {
-    // In production, this would fetch from Convex
-    setQuestions(sampleQuestions);
-  }, []);
+  // useEffect(() => {
+  //   // In production, this would fetch from Convex
+  //   setQuestions(sampleQuestions);
+  // }, []);
 
   const diagnosisQuestions = questions.filter(q => q.section === 'diagnosis');
   const managementQuestions = questions.filter(q => q.section === 'management');
