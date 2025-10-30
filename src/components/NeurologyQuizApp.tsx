@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from 'react';
 import { Brain, ChevronRight, CheckCircle, XCircle, Award, Plus, Edit2, Trash2, Save, X, Video, Play, BookOpen, Settings, Home, Users, BarChart3 } from 'lucide-react';
 import { useQuery, useMutation } from "convex/react";
