@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Brain, ChevronRight, CheckCircle, XCircle, Award, Plus, Edit2, Trash2, Save, X, Video, Play, BookOpen, Settings, Home, Users, BarChart3 } from 'lucide-react';
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 const NeurologyQuizApp = () => {
@@ -14,14 +14,15 @@ const deleteQuestion = useMutation(api.questions.deleteQuestion);
 
 // Video hooks
 const videos = useQuery(api.videos.getAllVideos) ?? [];
-const generateVideo = useMutation(api.videos.generateCompleteVideo);
+// generateCompleteVideo is an action — use useAction, not useMutation
+const generateVideo = useAction((api as any).videos.generateCompleteVideo);
 
 // State
   const [currentPage, setCurrentPage] = useState('landing');
   const [currentSection, setCurrentSection] = useState('diagnosis');
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [score, setScore] = useState({ diagnosis: 0, management: 0 });
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [score, setScore] = useState<{ diagnosis: number; management: number; total: number }>({ diagnosis: 0, management: 0, total: 0 });
   const [showResults, setShowResults] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<any>(null);
@@ -140,8 +141,8 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
   //   setQuestions(sampleQuestions);
   // }, []);
 
-  const diagnosisQuestions = questions.filter(q => q.section === 'diagnosis');
-  const managementQuestions = questions.filter(q => q.section === 'management');
+  const diagnosisQuestions = questions.filter((q: any) => q.section === 'diagnosis');
+  const managementQuestions = questions.filter((q: any) => q.section === 'management');
 
     // Admin Functions
   const handleAddQuestion = () => {
@@ -208,23 +209,27 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
     let diagScore = 0;
     let mgmtScore = 0;
 
-    diagnosisQuestions.forEach(q => {
+    diagnosisQuestions.forEach((q: any) => {
       if (q.type === 'trueFalse') {
-        if (answers[q.id] === q.correctAnswer) diagScore++;
+        if (answers[q._id] === q.correctAnswer) diagScore++;
       } else if (q.type === 'fillBlank') {
-        if (answers[q.id]?.toLowerCase().trim() === q.correctAnswer.toLowerCase().trim()) diagScore++;
+        const a = String(answers[q._id] ?? '').toLowerCase().trim();
+        const c = String(q.correctAnswer ?? '').toLowerCase().trim();
+        if (a === c) diagScore++;
       } else {
-        if (answers[q.id] === q.correctAnswer) diagScore++;
+        if (answers[q._id] === q.correctAnswer) diagScore++;
       }
     });
 
-    managementQuestions.forEach(q => {
+    managementQuestions.forEach((q: any) => {
       if (q.type === 'trueFalse') {
-        if (answers[q.id] === q.correctAnswer) mgmtScore++;
+        if (answers[q._id] === q.correctAnswer) mgmtScore++;
       } else if (q.type === 'fillBlank') {
-        if (answers[q.id]?.toLowerCase().trim() === q.correctAnswer.toLowerCase().trim()) mgmtScore++;
+        const a = String(answers[q._id] ?? '').toLowerCase().trim();
+        const c = String(q.correctAnswer ?? '').toLowerCase().trim();
+        if (a === c) mgmtScore++;
       } else {
-        if (answers[q.id] === q.correctAnswer) mgmtScore++;
+        if (answers[q._id] === q.correctAnswer) mgmtScore++;
       }
     });
 
@@ -243,7 +248,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
     setCurrentSection('diagnosis');
     setCurrentQuestion(0);
     setAnswers({});
-    setScore({ diagnosis: 0, management: 0 });
+    setScore({ diagnosis: 0, management: 0, total: 0 });
     setShowResults(false);
     setCurrentPage('quiz');
   };
@@ -257,9 +262,10 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
         prompt: videoPrompt,
         userId: 'demo-user' // Replace with actual user ID from auth
       });
-      alert('Video generation started! Check the Video Gallery to see your videos.');
+  alert('Video generation started! Check the Video Gallery to see your videos.');
       setShowVideoModal(false);
       setVideoPrompt('');
+  setCurrentPage('videos');
     } catch (error) {
       console.error('Error generating video:', error);
       alert('Failed to generate video. Please try again.');
@@ -399,7 +405,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
             <div className="max-w-3xl w-full max-h-[90vh] overflow-y-auto p-8 rounded-3xl" style={beveledCardStyle}>
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white">
-                  {questions.find(q => q.id === editingQuestion.id) ? 'Edit Question' : 'Add Question'}
+                  {questions.find((q: any) => q._id === editingQuestion._id) ? 'Edit Question' : 'Add Question'}
                 </h2>
                 <button
                   onClick={() => setEditingQuestion(null)}
@@ -415,7 +421,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                   <label className="block text-gray-300 mb-2">Section</label>
                   <select
                     value={editingQuestion.section}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, section: e.target.value })}
+                    onChange={(e) => setEditingQuestion((prev: any) => ({ ...prev, section: e.target.value }))}
                     className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                   >
                     <option value="diagnosis">Diagnosis</option>
@@ -428,7 +434,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                   <label className="block text-gray-300 mb-2">Question Type</label>
                   <select
                     value={editingQuestion.type}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, type: e.target.value })}
+                    onChange={(e) => setEditingQuestion((prev: any) => ({ ...prev, type: e.target.value }))}
                     className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                   >
                     <option value="multiple">Multiple Choice</option>
@@ -442,7 +448,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                   <label className="block text-gray-300 mb-2">Question</label>
                   <textarea
                     value={editingQuestion.question || ''}
-                    onChange={(e) => setEditingQuestion(prev => ({ ...prev, question: e.target.value }))}
+                    onChange={(e) => setEditingQuestion((prev: any) => ({ ...prev, question: e.target.value }))}
                     className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700 h-32"
                     placeholder="Enter your question..."
                   />
@@ -452,7 +458,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                 {editingQuestion.type === 'multiple' && (
                   <div>
                     <label className="block text-gray-300 mb-2">Options</label>
-                    {editingQuestion.options?.map((option, index) => (
+                    {editingQuestion.options?.map((option: string, index: number) => (
                       <div key={index} className="flex gap-2 mb-2">
                         <input
                           type="text"
@@ -460,7 +466,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                           onChange={(e) => {
                             const newOptions = [...(editingQuestion.options || [])];
                             newOptions[index] = e.target.value;
-                            setEditingQuestion(prev => ({ ...prev, options: newOptions }));
+                            setEditingQuestion((prev: any) => ({ ...prev, options: newOptions }));
                           }}
                           className="flex-1 p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                           placeholder={`Option ${index + 1}`}
@@ -469,7 +475,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                           type="radio"
                           name="correctAnswer"
                           checked={editingQuestion.correctAnswer === index}
-                          onChange={() => setEditingQuestion({ ...editingQuestion, correctAnswer: index })}
+                          onChange={() => setEditingQuestion((prev: any) => ({ ...prev, correctAnswer: index }))}
                           className="w-5 h-5 self-center"
                         />
                       </div>
@@ -483,7 +489,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                     <label className="block text-gray-300 mb-2">Correct Answer</label>
                     <select
                       value={editingQuestion.correctAnswer}
-                      onChange={(e) => setEditingQuestion({ ...editingQuestion, correctAnswer: e.target.value === 'true' })}
+                      onChange={(e) => setEditingQuestion((prev: any) => ({ ...prev, correctAnswer: e.target.value === 'true' }))}
                       className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                     >
                       <option value="true">True</option>
@@ -498,7 +504,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                     <input
                       type="text"
                       value={editingQuestion.correctAnswer || ''}
-                      onChange={(e) => setEditingQuestion(prev => ({ ...prev, correctAnswer: e.target.value }))}
+                      onChange={(e) => setEditingQuestion((prev: any) => ({ ...prev, correctAnswer: e.target.value }))}
                       className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700"
                       placeholder="Enter the correct answer..."
                     />
@@ -510,7 +516,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                   <label className="block text-gray-300 mb-2">Explanation</label>
                   <textarea
                     value={editingQuestion.explanation || ''}
-                    onChange={(e) => setEditingQuestion(prev => ({ ...prev, explanation: e.target.value }))}
+                    onChange={(e) => setEditingQuestion((prev: any) => ({ ...prev, explanation: e.target.value }))}
                     className="w-full p-3 rounded-xl bg-slate-900 text-white border border-slate-700 h-24"
                     placeholder="Explain the correct answer..."
                   />
@@ -531,10 +537,11 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
         )}
 
         {/* Questions List */}
+        {!editingQuestion && (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-white mb-4">All Questions</h2>
-          {questions.map((q) => (
-            <div key={q.id} className="p-6 rounded-2xl" style={beveledCardStyle}>
+          {questions.map((q: any) => (
+            <div key={q._id} className="p-6 rounded-2xl" style={beveledCardStyle}>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex gap-2 mb-2">
@@ -548,7 +555,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                   <p className="text-white text-lg mb-2">{q.question}</p>
                   {q.type === 'multiple' && (
                     <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
-                      {q.options.map((opt, idx) => (
+                      {(q.options ?? []).map((opt: string, idx: number) => (
                         <li key={idx} className={idx === q.correctAnswer ? 'text-green-400 font-semibold' : ''}>
                           {opt}
                         </li>
@@ -575,7 +582,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
                     <Edit2 className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleDeleteQuestion(q.id)}
+                    onClick={() => handleDeleteQuestion(q._id)}
                     className="p-2 rounded-lg text-white transition-all duration-300 hover:scale-110"
                     style={deleteButtonStyle}
                   >
@@ -586,6 +593,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
             </div>
           ))}
         </div>
+        )}
       </div>
     </div>
   );
@@ -623,7 +631,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
           {/* Progress Bar */}
           <div className="mb-8 p-2 rounded-full" style={insetStyle}>
             <div
-              className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-500"
+              className="h-3 rounded-full bg-linear-to-r from-blue-500 to-purple-500 transition-all duration-500"
               style={{ width: `${((currentQuestion + 1) / currentQuestions.length) * 100}%` }}
             />
           </div>
@@ -635,16 +643,16 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
             {/* Multiple Choice */}
             {question.type === 'multiple' && (
               <div className="space-y-4">
-                {question.options.map((option, index) => (
+                {(question.options ?? []).map((option: string, index: number) => (
                   <button
                     key={index}
-                    onClick={() => handleAnswer(question.id, index)}
+                    onClick={() => handleAnswer(question._id, index)}
                     className={`w-full p-4 rounded-xl text-left transition-all duration-300 ${
-                      answers[question.id] === index
+                      answers[question._id] === index
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-300 hover:bg-slate-700'
                     }`}
-                    style={answers[question.id] === index ? buttonStyle : insetStyle}
+                    style={answers[question._id] === index ? buttonStyle : insetStyle}
                   >
                     <span className="font-semibold mr-3">{String.fromCharCode(65 + index)}.</span>
                     {option}
@@ -657,25 +665,25 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
             {question.type === 'trueFalse' && (
               <div className="flex gap-4">
                 <button
-                  onClick={() => handleAnswer(question.id, true)}
+                  onClick={() => handleAnswer(question._id, true)}
                   className={`flex-1 p-6 rounded-xl font-semibold transition-all duration-300 ${
-                    answers[question.id] === true
+                    answers[question._id] === true
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-300 hover:bg-slate-700'
                   }`}
-                  style={answers[question.id] === true ? buttonStyle : insetStyle}
+                  style={answers[question._id] === true ? buttonStyle : insetStyle}
                 >
                   <CheckCircle className="inline-block w-6 h-6 mr-2" />
                   True
                 </button>
                 <button
-                  onClick={() => handleAnswer(question.id, false)}
+                  onClick={() => handleAnswer(question._id, false)}
                   className={`flex-1 p-6 rounded-xl font-semibold transition-all duration-300 ${
-                    answers[question.id] === false
+                    answers[question._id] === false
                       ? 'bg-blue-600 text-white'
                       : 'text-gray-300 hover:bg-slate-700'
                   }`}
-                  style={answers[question.id] === false ? buttonStyle : insetStyle}
+                  style={answers[question._id] === false ? buttonStyle : insetStyle}
                 >
                   <XCircle className="inline-block w-6 h-6 mr-2" />
                   False
@@ -687,8 +695,8 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
             {question.type === 'fillBlank' && (
               <input
                 type="text"
-                value={answers[question.id] || ''}
-                onChange={(e) => handleAnswer(question.id, e.target.value)}
+                value={answers[question._id] || ''}
+                onChange={(e) => handleAnswer(question._id, e.target.value)}
                 className="w-full p-4 rounded-xl bg-slate-900 text-white border-2 border-slate-700 focus:border-blue-500 outline-none"
                 placeholder="Type your answer..."
               />
@@ -699,7 +707,7 @@ const generateVideo = useMutation(api.videos.generateCompleteVideo);
           <div className="flex justify-end">
             <button
               onClick={handleNext}
-              disabled={answers[question.id] === undefined}
+              disabled={answers[question._id] === undefined}
               className="px-8 py-4 rounded-xl text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               style={buttonStyle}
             >
